@@ -1898,14 +1898,19 @@ export default function App() {
             <div className="bg-blue-600 p-2 rounded-lg shadow-md shadow-blue-100">
               <BookOpen className="text-white w-5 h-5" />
             </div>
-            <h1 className="font-bold text-xl tracking-tight hidden sm:block">
-              2022 개정교육과정 <span className="text-blue-600">선택과목 가이드</span>
-              <span className="text-xs font-semibold text-slate-500 ml-2.5 hidden lg:inline">
-                · 제작 : 숭신고등학교 진로전담교사 김강석
-              </span>
-            </h1>
+            <div className="hidden sm:block leading-tight">
+              <h1 className="font-bold text-xl tracking-tight">
+                성남지역 고등학교 <span className="text-blue-600">선택과목 가이드</span>
+                <span className="text-xs font-semibold text-slate-500 ml-2.5 hidden xl:inline">
+                  · 제작 : 숭신고등학교 진로전담교사 김강석
+                </span>
+              </h1>
+              <p className="text-[11px] font-medium text-slate-500 mt-0.5">
+                2022 개정교육과정 · 학교별 편제표 · 대학별 권장과목
+              </p>
+            </div>
             <h1 className="font-bold text-xl tracking-tight sm:hidden">
-              과목 가이드
+              성남 과목 가이드
             </h1>
           </div>
           
@@ -1974,23 +1979,6 @@ export default function App() {
               accept=".pdf"
               className="hidden"
             />
-            <button 
-              onClick={() => {
-                setAddSchoolTab('pdf');
-                setShowAddSchoolModal(true);
-              }}
-              disabled={isParsingPdf}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-all shadow-sm cursor-pointer shrink-0 disabled:opacity-50"
-              title="추가 고등학교 편제표 업로드 및 등록"
-            >
-              {isParsingPdf ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <FileUp className="w-3.5 h-3.5" />
-              )}
-              <span className="hidden sm:inline">추가 학교 업로드</span>
-              <span className="sm:hidden">업로드</span>
-            </button>
           </div>
         </div>
       </header>
@@ -2134,19 +2122,6 @@ export default function App() {
                         </button>
                       )}
                     </div>
-
-                    {/* Add School Button */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAddSchoolTab('pdf');
-                        setShowAddSchoolModal(true);
-                      }}
-                      className="flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer shrink-0"
-                    >
-                      <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                      <span>추가 학교 등록</span>
-                    </button>
                   </div>
                 </div>
 
@@ -3213,7 +3188,7 @@ export default function App() {
                           </p>
                           <p className="text-xs text-slate-500 max-w-md mx-auto mb-5 leading-relaxed">
                             {univViewMode === 'major' && selectedMajor
-                              ? `해당 학과는 수도권 주요 대학에서 필수/핵심 권장과목을 별도로 지정하지 않은 학과입니다. 연관성이 낮은 타 학과 과목을 무리하게 추천하지 않으니, 상단의 [2022 개정 교육과정 선택과목 가이드]를 참고하여 균형 있게 설계해보세요.`
+                              ? `해당 학과는 수도권 주요 대학에서 필수/핵심 권장과목을 별도로 지정하지 않은 학과입니다. 연관성이 낮은 타 학과 과목을 무리하게 추천하지 않으니, 상단의 [성남지역 고등학교 선택과목 가이드]를 참고하여 균형 있게 설계해보세요.`
                               : '검색어 또는 지역 필터를 변경하시거나 초기화해보세요.'}
                           </p>
                           <div className="flex items-center justify-center gap-2.5 flex-wrap">
@@ -4050,7 +4025,7 @@ export default function App() {
           </div>
           <div className="space-y-2">
             <p className="text-slate-900 font-bold text-lg">
-              2022 개정교육과정 학교별 선택과목 가이드 · {selectedSchool.name}
+              성남지역 고등학교 선택과목 가이드 · {selectedSchool.name}
             </p>
             <p className="text-slate-800 text-sm font-bold">
               제작 : 숭신고등학교 진로전담교사 김강석
