@@ -30,9 +30,8 @@ npm run build   # dist/ 에 정적 파일 생성
 2. 저장소 **Settings → Pages → Source** 를 **GitHub Actions** 로 설정
 3. `.github/workflows/deploy.yml` 이 자동으로 빌드·배포합니다.
 
-## 저작권
+## 저작권 및 이용 안내
 
-ⓒ 숭신고등학교 김강석 (cc by-nc)
-
-출처를 밝히면 자유롭게 공유·변형할 수 있으나, 상업적 이용은 금지됩니다.
-([CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/deed.ko))
+- **저작권자**: 숭신고등학교 진로전담교사 김강석
+- **이용 범위**: 본 자료는 중·고등학교 교사의 수업 및 지도 목적으로만 사용할 수 있습니다.
+- **금지 사항**: 학생·학부모 등 교사를 제외한 타인에게의 무단 배포 및 상업적 이용을 엄격히 금합니다.
