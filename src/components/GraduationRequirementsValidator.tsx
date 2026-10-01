@@ -78,6 +78,10 @@ function allocateSingleSubject(
     }
   }
 
+  // '공통' 영역(공통국어·공통수학·공통영어·한국사·통합사회·통합과학·과학탐구실험)은
+  // 학점 집계용 교과 영역이 아니므로, 아래 키워드 분류로 실제 교과(국/수/영/한국사/사회/과학)에 배정한다.
+  if (area === '공통') area = '';
+
   if (!area) {
     if (norm.includes('국어') || norm.includes('문학') || norm.includes('독서') || norm.includes('화법')) area = '국어';
     else if (norm.includes('수학') || norm.includes('대수') || norm.includes('미적') || norm.includes('기하') || norm.includes('확률')) area = '수학';
