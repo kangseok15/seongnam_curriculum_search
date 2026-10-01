@@ -339,9 +339,9 @@ export default function App() {
     const targetUrl = links[linkType];
 
     const typeLabels: Record<string, string> = {
-      homepage: '홈페이지',
-      alimi: '학교알리미',
-      status26: '2026 교육과정 운영 현황'
+      homepage: '학교 홈페이지',
+      alimi: '학교 알리미',
+      status26: '2026 교육과정 운영현황'
     };
     const label = typeLabels[linkType];
 
@@ -1702,6 +1702,34 @@ export default function App() {
     }
   };
 
+  // AI 추천(파란 체크)을 해지했던 칸을 다시 파란 체크로 복원
+  const handleRestoreAiCell = (
+    grade: number,
+    groupId: string,
+    subjectName: string,
+    semester: number
+  ) => {
+    const key = `${grade}-${groupId}-${subjectName}-${semester}`;
+    const group = (selectedSchool.groups || []).find(g => g.id === groupId && g.grade === grade);
+    if (group && group.selectCount) {
+      const subj = group.subjects.find(sb => sb.name === subjectName);
+      const alreadyCounted = !!subj && subj.semesters.some(sem => {
+        if (sem === semester) return false;
+        const st = getCellCheckState(grade, groupId, subjectName, sem);
+        return st === 'ai' || st === 'consultant';
+      });
+      if (!alreadyCounted && getGroupSelectedCount(grade, group) >= group.selectCount) {
+        showToast(`⚠️ [선택 불가] 선택군 정원(${group.selectCount}개)이 모두 선택되어 있습니다.\n다른 과목의 선택을 먼저 해지해 주세요.`);
+        return;
+      }
+    }
+    setConsultantChecks(prev => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  };
+
   const handleResetConsultantChecks = () => {
     setConsultantChecks({});
   };
@@ -1767,7 +1795,10 @@ export default function App() {
     const selectLimit = group?.selectCount || 999;
     const currentCount = group ? getGroupSelectedCount(grade, group) : 0;
     const isFull = currentCount >= selectLimit;
-    const isBlocked = state === 'off' && isFull;
+    // AI 추천이었으나 사용자가 해지한 칸(성적 등 사유): 대학별 지정 현황은 계속 확인 가능
+    const cellKey = `${grade}-${groupId}-${subjectName}-${semester}`;
+    const isReleased = state === 'off' && consultantChecks[cellKey] === 'off' && aiRecommendedKeys.has(cellKey);
+    const isBlocked = state === 'off' && isFull && !isReleased;
 
     const designations = getUnivDesignationsForSubject(subjectName, selectedMajor?.name);
     const topDesignations = designations.slice(0, 5);
@@ -1786,7 +1817,7 @@ export default function App() {
         type="button"
         onClick={(e) => {
           e.stopPropagation();
-          if (state === 'ai' && hasMajorDesignations) {
+          if ((state === 'ai' || isReleased) && hasMajorDesignations) {
             setUnivDesignationModal({
               subjectName,
               semester,
@@ -1803,6 +1834,8 @@ export default function App() {
             ? designationTooltip
             : state === 'consultant'
             ? `${subjectName} ${semester}학기: 컨설턴트 상담 선택 (클릭 시 해제)`
+            : isReleased
+            ? `${subjectName} ${semester}학기: 권장·핵심과목이지만 선택 해지됨 (클릭 시 대학별 지정 현황 확인 · 다시 선택)`
             : isBlocked
             ? blockedTooltip
             : `${subjectName} ${semester}학기: 미선택 (클릭하여 선택)`
@@ -1816,8 +1849,8 @@ export default function App() {
           justifyContent: 'center',
           cursor: isBlocked ? 'not-allowed' : 'pointer',
           transition: 'all 0.15s ease',
-          backgroundColor: state === 'ai' ? '#eff6ff' : state === 'consultant' ? '#f0fdf4' : isBlocked ? '#f8fafc' : '#ffffff',
-          border: state === 'ai' ? '2px solid #2563eb' : state === 'consultant' ? '2px solid #16a34a' : isBlocked ? '1.5px dashed #cbd5e1' : '1.5px solid #cbd5e1',
+          backgroundColor: state === 'ai' ? '#eff6ff' : state === 'consultant' ? '#f0fdf4' : isReleased ? '#f8fafc' : isBlocked ? '#f8fafc' : '#ffffff',
+          border: state === 'ai' ? '2px solid #2563eb' : state === 'consultant' ? '2px solid #16a34a' : isReleased ? '1.5px dashed #60a5fa' : isBlocked ? '1.5px dashed #cbd5e1' : '1.5px solid #cbd5e1',
           opacity: isBlocked ? 0.6 : 1,
           padding: 0,
           margin: '0 auto',
@@ -1838,6 +1871,9 @@ export default function App() {
         )}
         {state === 'consultant' && (
           <Check style={{ width: '0.95rem', height: '0.95rem', color: '#16a34a', strokeWidth: 3 }} />
+        )}
+        {isReleased && (
+          <Check style={{ width: '0.95rem', height: '0.95rem', color: '#93c5fd', strokeWidth: 3, opacity: 0.55 }} />
         )}
         {isBlocked && (
           <span style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 'bold' }}>✕</span>
@@ -2107,7 +2143,7 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Legend Bar (범례) - 27·26 편제표 삭제 후 홈페이지, 26 운영 현황, 학교알리미 3종 반영 */}
+                {/* Legend Bar (범례) - 27·26 편제표 삭제 후 홈페이지, 26 운영 현황, 학교 알리미 3종 반영 */}
                 <div className="bg-[#1c2434] text-white px-4 py-2.5 rounded-xl shadow-xs flex items-center justify-between gap-3 overflow-x-auto no-scrollbar">
                   <div className="flex items-center gap-3 sm:gap-6 shrink-0 flex-wrap">
                     {/* '범례' 알약 버튼 */}
@@ -2120,7 +2156,7 @@ export default function App() {
                       <span className="w-6 h-6 rounded-md bg-[#7ad1c3] text-slate-900 flex items-center justify-center font-bold shadow-2xs">
                         <Home className="w-3.5 h-3.5" />
                       </span>
-                      <span className="text-xs font-bold text-white tracking-tight">홈페이지</span>
+                      <span className="text-xs font-bold text-white tracking-tight">학교 홈페이지</span>
                     </div>
 
                     {/* 2. 26 운영 현황 */}
@@ -2128,15 +2164,15 @@ export default function App() {
                       <span className="w-6 h-6 rounded-md bg-[#f4ba40] text-slate-900 flex items-center justify-center font-bold shadow-2xs">
                         <ClipboardCheck className="w-3.5 h-3.5" />
                       </span>
-                      <span className="text-xs font-bold text-white tracking-tight">26 운영 현황</span>
+                      <span className="text-xs font-bold text-white tracking-tight">2026 교육과정 운영현황</span>
                     </div>
 
-                    {/* 3. 학교알리미 */}
+                    {/* 3. 학교 알리미 */}
                     <div className="flex items-center gap-1.5 shrink-0">
                       <span className="w-6 h-6 rounded-md bg-[#98db86] text-slate-900 flex items-center justify-center font-bold shadow-2xs">
                         <BarChart3 className="w-3.5 h-3.5" />
                       </span>
-                      <span className="text-xs font-bold text-white tracking-tight">학교알리미</span>
+                      <span className="text-xs font-bold text-white tracking-tight">학교 알리미</span>
                     </div>
                   </div>
                 </div>
@@ -2293,7 +2329,7 @@ export default function App() {
                                     </button>
                                   )}
 
-                                  {/* Right: 링크 버튼 3종 (홈페이지, 26 운영 현황, 학교알리미) */}
+                                  {/* Right: 링크 버튼 3종 (홈페이지, 26 운영 현황, 학교 알리미) */}
                                   <div
                                     className="flex items-center gap-1.5 shrink-0"
                                     onClick={(e) => e.stopPropagation()}
@@ -2313,17 +2349,17 @@ export default function App() {
                                       type="button"
                                       onClick={(e) => handleSchoolLinkClick(e, school, 'status26')}
                                       className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg border border-[#f4ba40] bg-amber-50/50 hover:bg-[#f4ba40] text-amber-800 hover:text-slate-950 flex items-center justify-center transition-all cursor-pointer shadow-2xs group/btn"
-                                      title={`${school.name} 2026 교육과정 운영 현황 바로가기`}
+                                      title={`${school.name} 2026 교육과정 운영현황 바로가기`}
                                     >
                                       <ClipboardCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover/btn:scale-115 transition-transform" />
                                     </button>
 
-                                    {/* 3. 학교알리미 */}
+                                    {/* 3. 학교 알리미 */}
                                     <button
                                       type="button"
                                       onClick={(e) => handleSchoolLinkClick(e, school, 'alimi')}
                                       className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg border border-[#98db86] bg-green-50/50 hover:bg-[#98db86] text-green-800 hover:text-slate-950 flex items-center justify-center transition-all cursor-pointer shadow-2xs group/btn"
-                                      title={`${school.name} 학교알리미 공시정보 바로가기`}
+                                      title={`${school.name} 학교 알리미 공시정보 바로가기`}
                                     >
                                       <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover/btn:scale-115 transition-transform" />
                                     </button>
@@ -2396,7 +2432,7 @@ export default function App() {
                             title={`${selectedSchool.name} 공식 홈페이지 바로가기`}
                           >
                             <Home className="w-3.5 h-3.5 group-hover/btn:scale-115 transition-transform" />
-                            <span>홈페이지</span>
+                            <span>학교 홈페이지</span>
                           </button>
 
                           {/* 2. 26 운영 현황 */}
@@ -2404,21 +2440,21 @@ export default function App() {
                             type="button"
                             onClick={(e) => handleSchoolLinkClick(e, selectedSchool, 'status26')}
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-[#f4ba40] bg-amber-50/70 hover:bg-[#f4ba40] text-amber-800 hover:text-slate-950 text-xs font-bold transition-all cursor-pointer shadow-2xs group/btn"
-                            title={`${selectedSchool.name} 2026 교육과정 운영 현황 바로가기`}
+                            title={`${selectedSchool.name} 2026 교육과정 운영현황 바로가기`}
                           >
                             <ClipboardCheck className="w-3.5 h-3.5 group-hover/btn:scale-115 transition-transform" />
-                            <span>26 운영 현황</span>
+                            <span>2026 교육과정 운영현황</span>
                           </button>
 
-                          {/* 3. 학교알리미 */}
+                          {/* 3. 학교 알리미 */}
                           <button
                             type="button"
                             onClick={(e) => handleSchoolLinkClick(e, selectedSchool, 'alimi')}
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-[#98db86] bg-green-50/70 hover:bg-[#98db86] text-green-800 hover:text-slate-950 text-xs font-bold transition-all cursor-pointer shadow-2xs group/btn"
-                            title={`${selectedSchool.name} 학교알리미 정보 바로가기`}
+                            title={`${selectedSchool.name} 학교 알리미 정보 바로가기`}
                           >
                             <BarChart3 className="w-3.5 h-3.5 group-hover/btn:scale-115 transition-transform" />
-                            <span>학교알리미</span>
+                            <span>학교 알리미</span>
                           </button>
                         </div>
                       </div>
@@ -4246,7 +4282,7 @@ export default function App() {
                           학교 교육과정 편성표 PDF 업로드
                         </h4>
                         <p className="text-xs text-slate-600 max-w-md mx-auto leading-relaxed">
-                          학교알리미 또는 학교 공지사항의 '2025~2027학년도 입학생 교육과정 편성표' PDF 파일을 업로드하시면,
+                          학교 알리미 또는 학교 공지사항의 '2025~2027학년도 입학생 교육과정 편성표' PDF 파일을 업로드하시면,
                           Gemini AI가 2·3학년 필수과목과 선택과목군(택1, 택4, 택5 등)을 자동으로 분석하여 편제표를 생성합니다.
                         </p>
                       </div>
@@ -4723,6 +4759,28 @@ export default function App() {
             {/* Modal Body */}
             <div className="p-4 max-h-[60vh] overflow-y-auto space-y-2">
               {(() => {
+                const curState = getCellCheckState(
+                  univDesignationModal.grade,
+                  univDesignationModal.groupId,
+                  univDesignationModal.subjectName,
+                  univDesignationModal.semester,
+                  univDesignationModal.isAiRecommended
+                );
+                const selected = curState === 'ai' || curState === 'consultant';
+                return (
+                  <div className={`flex items-center gap-2 text-xs font-bold rounded-xl p-2.5 border ${
+                    selected ? 'bg-blue-50 border-blue-200 text-blue-800' : 'bg-slate-100 border-slate-300 text-slate-700'
+                  }`}>
+                    <span>{selected ? '✅ 현재 선택됨' : '⛔ 현재 선택 해지됨'}</span>
+                    <span className="font-medium text-[11px] opacity-80">
+                      {selected
+                        ? '성적 등 사정이 있으면 아래 [선택 해지]를 누르세요. 해지해도 이 목록은 계속 볼 수 있습니다.'
+                        : '해지 상태에서도 대학별 지정 현황을 볼 수 있습니다. 필요하면 [다시 선택]을 누르세요.'}
+                    </span>
+                  </div>
+                );
+              })()}
+              {(() => {
                 const list = getUnivDesignationsForSubject(univDesignationModal.subjectName, selectedMajor?.name);
                 if (list.length === 0) {
                   return (
@@ -4785,28 +4843,38 @@ export default function App() {
 
             {/* Modal Footer */}
             <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => {
-                  handleToggleCell(
-                    univDesignationModal.grade,
-                    univDesignationModal.groupId,
-                    univDesignationModal.subjectName,
-                    univDesignationModal.semester,
-                    univDesignationModal.isAiRecommended
-                  );
-                  setUnivDesignationModal(null);
-                }}
-                className="text-xs text-rose-600 hover:text-rose-700 font-bold px-3 py-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 transition-colors"
-              >
-                수강 체크 해제
-              </button>
+              {(() => {
+                const m = univDesignationModal;
+                const curState = getCellCheckState(m.grade, m.groupId, m.subjectName, m.semester, m.isAiRecommended);
+                const selected = curState === 'ai' || curState === 'consultant';
+                const key = `${m.grade}-${m.groupId}-${m.subjectName}-${m.semester}`;
+                const released = !selected && consultantChecks[key] === 'off' && aiRecommendedKeys.has(key);
+                return selected ? (
+                  <button
+                    type="button"
+                    onClick={() => handleToggleCell(m.grade, m.groupId, m.subjectName, m.semester, m.isAiRecommended)}
+                    className="text-xs text-rose-600 hover:text-rose-700 font-bold px-3 py-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 transition-colors"
+                  >
+                    선택 해지
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => released
+                      ? handleRestoreAiCell(m.grade, m.groupId, m.subjectName, m.semester)
+                      : handleToggleCell(m.grade, m.groupId, m.subjectName, m.semester, m.isAiRecommended)}
+                    className="text-xs text-blue-700 hover:text-blue-800 font-bold px-3 py-1.5 rounded-lg border border-blue-200 hover:bg-blue-50 transition-colors"
+                  >
+                    다시 선택
+                  </button>
+                );
+              })()}
               <button
                 type="button"
                 onClick={() => setUnivDesignationModal(null)}
                 className="text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl shadow-xs transition-colors"
               >
-                선택 유지 (닫기)
+                닫기
               </button>
             </div>
           </div>
