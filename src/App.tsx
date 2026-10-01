@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef, Fragment, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { flushSync } from 'react-dom';
 import { jsPDF } from 'jspdf';
 import { toJpeg } from 'html-to-image';
 import { 
@@ -1266,47 +1267,53 @@ export default function App() {
 
     setIsDownloading(true);
     setErrorMsg(null);
+    const originalGrade = planGrade;
     try {
       const element = printRef.current;
-      
-      // Use html-to-image for better compatibility with modern CSS (oklch)
-      const dataUrl = await toJpeg(element, {
-        quality: 0.95,
-        backgroundColor: '#ffffff',
-        pixelRatio: 2,
-      });
-      
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-      const margin = 15; // Set margin to 15mm as requested
-      
-      const img = new Image();
-      img.src = dataUrl;
-      await new Promise((resolve) => (img.onload = resolve));
-      
-      // Calculate dimensions to fit exactly on one page within margins
+      const margin = 15; // 여백 15mm
       const maxAvailableWidth = pdfWidth - (margin * 2);
       const maxAvailableHeight = pdfHeight - (margin * 2);
-      
-      const printScale = 1.0; // Scale to 100% of available space within margins
-      let finalWidth = maxAvailableWidth * printScale;
-      let finalHeight = (img.height * finalWidth) / img.width;
-      
-      if (finalHeight > maxAvailableHeight * printScale) {
-        finalHeight = maxAvailableHeight * printScale;
-        finalWidth = (img.width * finalHeight) / img.height;
+
+      // 2학년 → 3학년 순서로 화면을 전환하며 각각 캡처하여 한 PDF에 2페이지로 담는다
+      const gradesToExport: (2 | 3)[] = [2, 3];
+      for (let i = 0; i < gradesToExport.length; i++) {
+        flushSync(() => setPlanGrade(gradesToExport[i]));
+        // 레이아웃/폰트 반영 대기
+        await new Promise(resolve => setTimeout(resolve, 250));
+
+        // html-to-image: 최신 CSS(oklch) 호환성
+        const dataUrl = await toJpeg(element, {
+          quality: 0.95,
+          backgroundColor: '#ffffff',
+          pixelRatio: 2,
+        });
+
+        const img = new Image();
+        img.src = dataUrl;
+        await new Promise((resolve) => (img.onload = resolve));
+
+        // 한 페이지(여백 안)에 맞춰 배치
+        let finalWidth = maxAvailableWidth;
+        let finalHeight = (img.height * finalWidth) / img.width;
+        if (finalHeight > maxAvailableHeight) {
+          finalHeight = maxAvailableHeight;
+          finalWidth = (img.width * finalHeight) / img.height;
+        }
+        const xPos = (pdfWidth - finalWidth) / 2;
+
+        if (i > 0) pdf.addPage();
+        pdf.addImage(dataUrl, 'JPEG', xPos, margin, finalWidth, finalHeight);
       }
 
-      const xPos = (pdfWidth - finalWidth) / 2;
-      const yPos = margin; // Start from top margin to maximize space
-      
-      pdf.addImage(dataUrl, 'JPEG', xPos, yPos, finalWidth, finalHeight);
-      pdf.save(`2022개정_선택과목가이드_${selectedMajor.name}_${planGrade}학년.pdf`);
+      pdf.save(`2022개정_선택과목가이드_${selectedMajor.name}_2-3학년.pdf`);
     } catch (error: any) {
       console.error('PDF generation failed:', error);
       setErrorMsg(`PDF 생성 실패: 브라우저 호환성 문제. 인쇄(PDF로 저장)를 이용해 주세요.`);
     } finally {
+      flushSync(() => setPlanGrade(originalGrade));
       setIsDownloading(false);
     }
   };
@@ -3299,7 +3306,7 @@ export default function App() {
                           ) : (
                             <Download className="w-4 h-4" />
                           )}
-                          {isDownloading ? '생성 중...' : `${planGrade}학년 PDF 다운로드`}
+                          {isDownloading ? '생성 중...' : 'PDF 다운로드'}
                         </button>
                       </div>
                     </div>
