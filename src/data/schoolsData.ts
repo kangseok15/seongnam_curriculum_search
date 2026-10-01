@@ -1,4 +1,5 @@
 import { SelectionGroup, SungshinSubject, SUNGSHIN_GROUPS, MANDATORY_SUBJECTS } from './curriculumData';
+import { PDF_CURRICULA } from './pdfCurriculaData';
 
 export interface SchoolCurriculum {
   id: string;
@@ -6129,7 +6130,14 @@ const RAW_SEONGNAM_SCHOOLS: SchoolCurriculum[] = [
   SUNGSHIN_CURRICULUM
 ];
 
-export const ALL_SEONGNAM_SCHOOLS: SchoolCurriculum[] = RAW_SEONGNAM_SCHOOLS.map(normalizeSchoolCurriculum);
+// 2027학년도 입학생 교육과정 편성표(PDF) 기준 편제로 교체 (학점은 표의 학기 칸 숫자 기준)
+const applyPdfCurriculum = (school: SchoolCurriculum): SchoolCurriculum => {
+  const pdf = PDF_CURRICULA[school.id];
+  if (!pdf) return school;
+  return { ...school, mandatory: pdf.mandatory, groups: pdf.groups };
+};
+
+export const ALL_SEONGNAM_SCHOOLS: SchoolCurriculum[] = RAW_SEONGNAM_SCHOOLS.map(applyPdfCurriculum).map(normalizeSchoolCurriculum);
 export const INITIAL_SCHOOLS: SchoolCurriculum[] = ALL_SEONGNAM_SCHOOLS;
 
 // 사립 고등학교 목록 (공립 / 사립 구분)
