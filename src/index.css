@@ -1,81 +1,17 @@
-@import "tailwindcss";
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>성남지역 고등학교 선택과목 가이드</title>
+    <meta name="description" content="2022 개정교육과정 · 성남지역 고등학교 학교별 편제표 · 대학별 권장과목 (제작 : 숭신고등학교 진로전담교사 김강석)" />
+    <meta property="og:title" content="성남지역 고등학교 선택과목 가이드" />
+    <meta property="og:description" content="2022 개정교육과정 · 학교별 편제표 · 대학별 권장과목 (제작 : 숭신고등학교 진로전담교사 김강석)" />
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
 
-@theme {
-  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-}
-
-body {
-  font-family: var(--font-sans);
-  letter-spacing: -0.02em;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-@layer utilities {
-  @media print {
-    /* Hide everything by default */
-    body > * {
-      display: none !important;
-    }
-    
-    /* Show only the print area and spread container */
-    body > #root, 
-    #root > div,
-    .print-area,
-    .print-spread-area {
-      display: block !important;
-      visibility: visible !important;
-    }
-
-    /* Ensure parent containers don't hide the print area */
-    .print-area,
-    .print-spread-area {
-      position: absolute !important;
-      left: 0 !important;
-      top: 0 !important;
-      width: 100% !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      border: none !important;
-      box-shadow: none !important;
-      visibility: visible !important;
-    }
-
-    /* Hide UI elements that shouldn't be in PDF / Print */
-    .print-hidden {
-      display: none !important;
-    }
-
-    /* Table styling for print */
-    table {
-      border-collapse: collapse !important;
-      width: 100% !important;
-    }
-    
-    th, td {
-      border: 1px solid #cbd5e1 !important;
-      color: #000 !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    /* Keep the recommendation highlights in print */
-    .bg-blue-50\/50 {
-      background-color: #eff6ff !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    .bg-blue-600 {
-      background-color: #2563eb !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    @page {
-      size: A4 landscape;
-      margin: 6mm;
-    }
-  }
-}
