@@ -27,6 +27,8 @@ import {
   Trash2,
   Settings,
   FileUp,
+  Copyright,
+  Ban,
   Loader2,
   FileCheck,
   Briefcase,
@@ -4015,25 +4017,64 @@ export default function App() {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 mt-12 py-12 print:hidden">
-        <div className="max-w-5xl mx-auto px-4 text-center space-y-4">
-          <div className="flex justify-center gap-4">
-            <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">
-              <BookOpen className="w-5 h-5" />
+      {/* Footer: 저작권 및 이용 안내 */}
+      <footer className="mt-12 print:hidden bg-gradient-to-b from-slate-50 to-slate-100 border-t border-slate-200 py-10">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            {/* 카드 헤더 */}
+            <div className="bg-[#1c2434] px-5 py-3.5 flex items-center gap-3">
+              <div className="bg-blue-600 p-1.5 rounded-lg shadow-md shadow-blue-900/30">
+                <BookOpen className="w-4 h-4 text-white" />
+              </div>
+              <div className="leading-tight">
+                <p className="text-white font-bold text-sm">성남지역 고등학교 선택과목 가이드</p>
+                <p className="text-slate-400 text-[11px] mt-0.5">저작권 및 이용 안내</p>
+              </div>
             </div>
+
+            {/* 안내 항목 */}
+            <dl className="divide-y divide-slate-100">
+              <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-5 px-5 py-4">
+                <dt className="flex items-center gap-2.5 sm:w-36 shrink-0">
+                  <span className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <Copyright className="w-4 h-4" />
+                  </span>
+                  <span className="text-sm font-bold text-slate-800">저작권자</span>
+                </dt>
+                <dd className="text-sm text-slate-600 leading-relaxed sm:pt-1.5">
+                  숭신고등학교 진로전담교사 <strong className="text-slate-900">김강석</strong>
+                </dd>
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-5 px-5 py-4">
+                <dt className="flex items-center gap-2.5 sm:w-36 shrink-0">
+                  <span className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <GraduationCap className="w-4 h-4" />
+                  </span>
+                  <span className="text-sm font-bold text-slate-800">이용 범위</span>
+                </dt>
+                <dd className="text-sm text-slate-600 leading-relaxed sm:pt-1.5">
+                  본 자료는 중·고등학교 <strong className="text-slate-900">교사의 수업 및 지도 목적</strong>으로만 사용할 수 있습니다.
+                </dd>
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-5 px-5 py-4 bg-rose-50/50">
+                <dt className="flex items-center gap-2.5 sm:w-36 shrink-0">
+                  <span className="w-8 h-8 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center">
+                    <Ban className="w-4 h-4" />
+                  </span>
+                  <span className="text-sm font-bold text-rose-700">금지 사항</span>
+                </dt>
+                <dd className="text-sm text-slate-600 leading-relaxed sm:pt-1.5">
+                  학생·학부모 등 교사를 제외한 타인에게의 <strong className="text-rose-700">무단 배포 및 상업적 이용</strong>을 엄격히 금합니다.
+                </dd>
+              </div>
+            </dl>
           </div>
-          <div className="space-y-2">
-            <p className="text-slate-900 font-bold text-lg">
-              성남지역 고등학교 선택과목 가이드 · {selectedSchool.name}
-            </p>
-            <p className="text-slate-800 text-sm font-bold">
-              제작 : 숭신고등학교 진로전담교사 김강석
-            </p>
-            <p className="text-slate-400 text-sm">
-              이 자료는 학과바이블(캠퍼스멘토) 및 각 시도교육청, 대학 권장과목, 각 고등학교 2027학년도 교육과정 편제표를 바탕으로 제작되었습니다.
-            </p>
-          </div>
+
+          <p className="text-center text-slate-400 text-xs mt-5 leading-relaxed">
+            이 자료는 학과바이블(캠퍼스멘토) 및 각 시도교육청, 대학 권장과목, 각 고등학교 2027학년도 교육과정 편제표를 바탕으로 제작되었습니다.
+          </p>
         </div>
       </footer>
 
